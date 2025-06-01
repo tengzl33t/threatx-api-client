@@ -107,7 +107,7 @@ class Client:
         async with aiohttp.ClientSession(
                 base_url=self.base_url, headers=self.headers,
                 connector=aiohttp.TCPConnector(
-                    force_close=True, enable_cleanup_closed=True, verify_ssl=self.verify_ssl
+                    enable_cleanup_closed=True, verify_ssl=self.verify_ssl, keepalive_timeout=5
                 )
         ) as session:
             responses = await asyncio.gather(*(
@@ -131,7 +131,7 @@ class Client:
         async with aiohttp.ClientSession(
                 base_url=self.base_url, headers=self.headers,
                 connector=aiohttp.TCPConnector(
-                    force_close=True, enable_cleanup_closed=True, verify_ssl=self.verify_ssl
+                    enable_cleanup_closed=True, verify_ssl=self.verify_ssl, keepalive_timeout=5
                 )
         ) as session:
             response = await asyncio.gather(
