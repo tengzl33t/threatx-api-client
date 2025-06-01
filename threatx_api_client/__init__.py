@@ -56,6 +56,14 @@ class Client:
     def __generate_api_link(self, api_ver: int):
         return f"/{self.api_path}/v{api_ver}"
 
+    def __get_tcp_connector(self):
+        return aiohttp.TCPConnector(
+            enable_cleanup_closed=True,
+            verify_ssl=self.verify_ssl,
+            keepalive_timeout=5,
+            ssl_shutdown_timeout=1
+        )
+
     async def __post(self, session, path: str, post_payload: dict):
         marker_var = post_payload.get("marker_var")
         clean_post_payload = post_payload.copy()
@@ -106,9 +114,7 @@ class Client:
 
         async with aiohttp.ClientSession(
                 base_url=self.base_url, headers=self.headers,
-                connector=aiohttp.TCPConnector(
-                    enable_cleanup_closed=True, verify_ssl=self.verify_ssl, keepalive_timeout=5
-                )
+                connector=self.__get_tcp_connector()
         ) as session:
             responses = await asyncio.gather(*(
                 self.__post(
@@ -130,9 +136,7 @@ class Client:
 
         async with aiohttp.ClientSession(
                 base_url=self.base_url, headers=self.headers,
-                connector=aiohttp.TCPConnector(
-                    enable_cleanup_closed=True, verify_ssl=self.verify_ssl, keepalive_timeout=5
-                )
+                connector=self.__get_tcp_connector()
         ) as session:
             response = await asyncio.gather(
                 self.__post(
