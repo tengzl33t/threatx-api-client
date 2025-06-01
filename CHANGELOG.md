@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v1.6.6 (2025-06-01)
+
+### Bug Fixes
+
+- Ssl timeout
+  ([`abef6ad`](https://github.com/tengzl33t/threatx-api-client/commit/abef6ad463fd54ce8b4e60f96cafcd79b8ffec24))
+
+- Version
+  ([`38eec3a`](https://github.com/tengzl33t/threatx-api-client/commit/38eec3ad2bc315db78d45119df427e80249303e1))
+
+
 ## v1.6.5 (2025-06-01)
 
 ### Bug Fixes
