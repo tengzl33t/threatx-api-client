@@ -2,6 +2,7 @@ import asyncio
 import os
 from unittest import TestCase
 
+import aiohttp
 from threatx_api_client import (
     Client,
     TXAPIIncorrectCommandError,
@@ -16,9 +17,9 @@ class TestClient(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Setting up Main API Client class for tests."""
-        api_key = cls.api_key = os.environ.get("TX_API_KEY")
+        api_key = cls.api_key = os.getenv("TX_API_KEY")
         api_env = cls.api_env = "api.protect"
-        cls.tenant = os.environ.get("TX_API_TEST_TENANT")
+        cls.tenant = os.getenv("TX_API_TEST_TENANT")
         cls.protect_client = Client(api_env, api_key)
 
     def test_empty_token(self):
@@ -26,11 +27,15 @@ class TestClient(TestCase):
         with self.assertRaises(TXAPIIncorrectTokenError):
             Client("prod", "")
 
+    async def __process_with_session(self, func, client):
+        async with aiohttp.ClientSession(base_url=client.base_url) as session:
+            return await func(session)
+
     def test_incorrect_token(self):
         """Test for incorrect API token provided."""
         with self.assertRaises(TXAPIIncorrectTokenError):
             client = Client("prod", "a34456456gfd")
-            asyncio.run(client._Client__login())  # Private method test hack
+            asyncio.run(self.__process_with_session(client._Client__login, client))  # Private method test hack
 
     def test_correct_token_and_env(self):
         """Test for correct API token and environment provided."""
