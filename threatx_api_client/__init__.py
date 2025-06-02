@@ -73,25 +73,37 @@ class Client:
                     f"Please contact: support@threatx.com"
                 )
 
-            response_ok_data = response.get("Ok")
-            response_error_data = response.get("Error")
+        response_ok_data = response.get("Ok")
+        response_error_data = response.get("Error")
 
-            if response_ok_data is not None:
-                if marker_var:
-                    return {marker_var: response_ok_data}
-                return response_ok_data
+        if response_ok_data is not None:
+            if marker_var:
+                return {marker_var: response_ok_data}
+            return response_ok_data
 
-            global tx_api_session_token  # noqa: PLW0603
+        global tx_api_session_token  # noqa: PLW0603
 
-            if response_error_data == "Token Expired. Please re-authenticate.":
-                post_payload.pop("token", None)
-                tx_api_session_token = await self.__login()
-                return await self.__post(session, path, {"token": tx_api_session_token, **post_payload})
-            elif response_error_data:
-                error_msg = {marker_var: response_error_data} if marker_var else response_error_data
-                raise TXAPIResponseError(error_msg)
-            else:
-                return {marker_var: response} if marker_var else response
+        if response_error_data == "Token Expired. Please re-authenticate.":
+            post_payload.pop("token", None)
+            tx_api_session_token = await self.__login(session)
+            return await self.__post(session, path, {"token": tx_api_session_token, **post_payload})
+        elif response_error_data:
+            error_msg = {marker_var: response_error_data} if marker_var else response_error_data
+            raise TXAPIResponseError(error_msg)
+        else:
+            return {marker_var: response} if marker_var else response
+
+    async def get_session_connector(self):
+        connector = aiohttp.TCPConnector(
+            enable_cleanup_closed=True,
+            verify_ssl=self.verify_ssl,
+            keepalive_timeout=5,
+            ssl_shutdown_timeout=1,
+            resolver=AsyncResolver()
+        )
+        session = aiohttp.ClientSession(base_url=self.base_url, headers=self.headers, connector=connector)
+
+        return connector, session
 
     async def __process_response(self, path: str, available_commands: list, payloads):
         normalized_payloads = [payloads] if isinstance(payloads, dict) else payloads
@@ -100,33 +112,21 @@ class Client:
             if payload.get("command") not in available_commands:
                 raise TXAPIIncorrectCommandError(payload.get("command"))
 
-        global tx_api_session_token  # noqa: PLW0603
+        connector, session = await self.get_session_connector()
 
-        if not tx_api_session_token:
-            tx_api_session_token = await self.__login()
-
-        resolver = AsyncResolver()
-        connector = aiohttp.TCPConnector(
-            enable_cleanup_closed=True,
-            verify_ssl=self.verify_ssl,
-            keepalive_timeout=5,
-            ssl_shutdown_timeout=1,
-            resolver=resolver
-        )
         try:
-            async with aiohttp.ClientSession(
-                    base_url=self.base_url, headers=self.headers,
-                    connector=connector
-            ) as session:
-                responses = await asyncio.gather(*(
-                    self.__post(
-                        session,
-                        path,
-                        {"token": tx_api_session_token, **payload}) for payload in normalized_payloads
-                ), return_exceptions=True)
-                await asyncio.sleep(0.3)
+            global tx_api_session_token  # noqa: PLW0603
+            if not tx_api_session_token:
+                tx_api_session_token = await self.__login(session)
+
+            responses = await asyncio.gather(*(
+                self.__post(
+                    session,
+                    path,
+                    {"token": tx_api_session_token, **payload}) for payload in normalized_payloads
+            ), return_exceptions=True)
         finally:
-            await resolver.close()
+            await session.close()
             await connector.close()
 
         if isinstance(payloads, dict):
@@ -134,36 +134,19 @@ class Client:
 
         return responses
 
-    async def __login(self):
+    async def __login(self, session: aiohttp.ClientSession):
         path = f"{self.__generate_api_link(1)}/login"
 
         if not self.api_key:
             raise TXAPIIncorrectTokenError("Please provide TX API Key.")
 
-        resolver = AsyncResolver()
-        connector = aiohttp.TCPConnector(
-            enable_cleanup_closed=True,
-            verify_ssl=self.verify_ssl,
-            keepalive_timeout=5,
-            ssl_shutdown_timeout=1,
-            resolver=resolver
+        response = await asyncio.gather(
+            self.__post(
+                session,
+                path,
+                {"command": "login", "api_token": self.api_key}
+            )
         )
-        try:
-            async with aiohttp.ClientSession(
-                    base_url=self.base_url, headers=self.headers,
-                    connector=connector
-            ) as session:
-                response = await asyncio.gather(
-                    self.__post(
-                        session,
-                        path,
-                        {"command": "login", "api_token": self.api_key}
-                    )
-                )
-                await asyncio.sleep(0.3)
-        finally:
-            await resolver.close()
-            await connector.close()
 
         token_value = response[0]["token"]
 
