@@ -1,6 +1,28 @@
 # CHANGELOG
 
 
+## v1.6.7 (2025-06-02)
+
+### Bug Fixes
+
+- Enable async dns
+  ([`bea3ccf`](https://github.com/tengzl33t/threatx-api-client/commit/bea3ccf79bad180c8ab91427188fe218ea6b9020))
+
+- Tests
+  ([`206a91f`](https://github.com/tengzl33t/threatx-api-client/commit/206a91f3c45d9be55d43652cc8a29562d48e8f2e))
+
+### Refactoring
+
+- Session processing
+  ([`a92979f`](https://github.com/tengzl33t/threatx-api-client/commit/a92979f92dc16ac27de04bd8f9ff9a97eaeff0e0))
+
+- Session processing
+  ([`9ae4f80`](https://github.com/tengzl33t/threatx-api-client/commit/9ae4f80775c0a920983a41e1ff6296c33f8b9c38))
+
+- Session processing
+  ([`cf9cac2`](https://github.com/tengzl33t/threatx-api-client/commit/cf9cac2dc9a722137d6a8f418c5d834f8807953e))
+
+
 ## v1.6.6 (2025-06-01)
 
 ### Bug Fixes
