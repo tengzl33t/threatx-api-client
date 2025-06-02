@@ -4,7 +4,6 @@ from json import JSONDecodeError
 from typing import Optional
 
 import aiohttp
-from aiohttp import AsyncResolver
 
 from threatx_api_client.exceptions import (
     TXAPIIncorrectCommandError,
@@ -100,7 +99,7 @@ class Client:
             if payload.get("command") not in available_commands:
                 raise TXAPIIncorrectCommandError(payload.get("command"))
 
-        resolver = AsyncResolver()
+        resolver = aiohttp.AsyncResolver()
         connector = aiohttp.TCPConnector(
             enable_cleanup_closed=True,
             verify_ssl=self.verify_ssl,
@@ -123,8 +122,8 @@ class Client:
             ), return_exceptions=True)
         finally:
             await session.close()
+            await resolver.close()
 
-        del tx_api_session_token
         if isinstance(payloads, dict):
             return responses[0]
 
