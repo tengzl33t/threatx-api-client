@@ -93,18 +93,6 @@ class Client:
         else:
             return {marker_var: response} if marker_var else response
 
-    async def get_session_connector(self):
-        connector = aiohttp.TCPConnector(
-            enable_cleanup_closed=True,
-            verify_ssl=self.verify_ssl,
-            keepalive_timeout=5,
-            ssl_shutdown_timeout=1,
-            resolver=AsyncResolver()
-        )
-        session = aiohttp.ClientSession(base_url=self.base_url, headers=self.headers, connector=connector)
-
-        return connector, session
-
     async def __process_response(self, path: str, available_commands: list, payloads):
         normalized_payloads = [payloads] if isinstance(payloads, dict) else payloads
 
@@ -112,7 +100,15 @@ class Client:
             if payload.get("command") not in available_commands:
                 raise TXAPIIncorrectCommandError(payload.get("command"))
 
-        connector, session = await self.get_session_connector()
+        resolver = AsyncResolver()
+        connector = aiohttp.TCPConnector(
+            enable_cleanup_closed=True,
+            verify_ssl=self.verify_ssl,
+            keepalive_timeout=5,
+            ssl_shutdown_timeout=1,
+            resolver=resolver
+        )
+        session = aiohttp.ClientSession(base_url=self.base_url, headers=self.headers, connector=connector)
 
         try:
             global tx_api_session_token  # noqa: PLW0603
@@ -127,8 +123,8 @@ class Client:
             ), return_exceptions=True)
         finally:
             await session.close()
-            await connector.close()
 
+        del tx_api_session_token
         if isinstance(payloads, dict):
             return responses[0]
 
