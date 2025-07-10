@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v1.7.0 (2025-07-10)
+
+### Chores
+
+- Allow older aiodns version
+  ([`0882c80`](https://github.com/tengzl33t/threatx-api-client/commit/0882c8005132d406e4c19ae56c497305a838fd21))
+
+- Cleanup
+  ([`db24954`](https://github.com/tengzl33t/threatx-api-client/commit/db249549e4d1f136bdef806ce5d0482b7ead2276))
+
+### Refactoring
+
+- Avoid aiohttp warning
+  ([`2132d8b`](https://github.com/tengzl33t/threatx-api-client/commit/2132d8b877c633d6c7eff1721a8e113587c8f974))
+
+- Remove deprecated field
+  ([`9994061`](https://github.com/tengzl33t/threatx-api-client/commit/999406188d9df1b4dc54a813f1986b9330adcb63))
+
+
 ## v1.6.7 (2025-06-02)
 
 ### Bug Fixes
