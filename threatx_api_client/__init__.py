@@ -1,6 +1,5 @@
 import asyncio
 import importlib.metadata
-import sys
 from json import JSONDecodeError
 from typing import Optional
 
