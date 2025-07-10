@@ -105,7 +105,6 @@ class Client:
             enable_cleanup_closed=True,
             verify_ssl=self.verify_ssl,
             keepalive_timeout=5,
-            ssl_shutdown_timeout=1 if sys.version_info >= (3, 11) else 0,
             resolver=resolver
         )
         session = aiohttp.ClientSession(base_url=self.base_url, headers=self.headers, connector=connector)
