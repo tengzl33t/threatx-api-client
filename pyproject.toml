@@ -14,13 +14,13 @@ dependencies = [
 requires-python = ">=3.9,<4"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.4.2"
-coverage = "^7.6.12"
-deptry = "^0.23.0"
+ruff = "^0.12"
+coverage = "^7.10"
+deptry = "^0.23"
 
 [tool.poetry.group.release.dependencies]
-python-semantic-release = "^9.8.1"
-pytest = "^8.2.2"
+python-semantic-release = "^10.3"
+pytest = "^8.4"
 
 [build-system]
 requires = ["poetry-core>=2.0"]
