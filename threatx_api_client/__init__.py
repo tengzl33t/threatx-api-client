@@ -69,7 +69,8 @@ class Client:
                 raise TXAPIJSONError(
                     raw_response.status,
                     await raw_response.text(),
-                    raw_response.headers.get("X-Request-ID")
+                    raw_response.headers.get("X-Request-ID"),
+                    marker_var
                 )
 
         response_ok_data = response.get("Ok")

@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class TXAPIError(Exception):
     """Common TX API Client exception class."""
     pass
@@ -19,8 +22,9 @@ class TXAPIResponseError(TXAPIError):
 
 class TXAPIJSONError(TXAPIError):
     """TX API Client JSON response error exception class."""
-    def __init__(self, status_code, message, request_id):
+    def __init__(self, status_code: int, message: str, request_id: str, marker_var: Optional[str] = None):
         """Additional fields to provide data in exception."""
         self.status_code = status_code
         self.message = message
         self.request_id = request_id
+        self.marker_var = marker_var
