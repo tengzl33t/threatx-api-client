@@ -16,3 +16,11 @@ class TXAPIIncorrectCommandError(TXAPIError):
 class TXAPIResponseError(TXAPIError):
     """TX API Client response error exception class."""
     pass
+
+class TXAPIJSONError(TXAPIError):
+    """TX API Client JSON response error exception class."""
+    def __init__(self, status_code, message, request_id):
+        """Additional fields to provide data in exception."""
+        self.status_code = status_code
+        self.message = message
+        self.request_id = request_id

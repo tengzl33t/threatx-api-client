@@ -8,6 +8,7 @@ import aiohttp
 from threatx_api_client.exceptions import (
     TXAPIIncorrectCommandError,
     TXAPIIncorrectTokenError,
+    TXAPIJSONError,
     TXAPIResponseError,
 )
 
@@ -65,11 +66,10 @@ class Client:
             try:
                 response = await raw_response.json(content_type=None)
             except JSONDecodeError:
-                request_id = raw_response.headers.get("X-Request-ID")
-                raise TXAPIResponseError(
-                    f"Could not parse the API response.\n"
-                    f"Request ID: {request_id}\n"
-                    f"Please contact: support@threatx.com"
+                raise TXAPIJSONError(
+                    raw_response.status,
+                    await raw_response.text(),
+                    raw_response.headers.get("X-Request-ID")
                 )
 
         response_ok_data = response.get("Ok")
