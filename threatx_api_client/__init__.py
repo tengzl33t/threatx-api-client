@@ -1,9 +1,9 @@
 import asyncio
 import importlib.metadata
 from json import JSONDecodeError
-from typing import Optional
 
 import aiohttp
+from aiohttp import ClientSession
 
 from threatx_api_client.exceptions import (
     TXAPIIncorrectCommandError,
@@ -16,12 +16,16 @@ tx_api_session_token = ""
 
 
 class AsyncClient:
-    """Main API Client class."""
+    """Main Async API Client class."""
 
-    def __init__(self, api_env, api_key, headers: Optional[dict] = None, verify_ssl: bool = True):
-        """Main Client class initializer."""
+    def __init__(
+            self, api_env: str, api_key: str,
+            headers: dict | None = None, verify_ssl: bool = True,
+    ) -> None:
+        """Async Main Client class initializer."""
         if not api_key:
-            raise TXAPIIncorrectTokenError("Please provide TX API Key.")
+            msg = "Please provide TX API Key."
+            raise TXAPIIncorrectTokenError(msg)
 
         self.api_path = "tx_api"
         self.api_env = api_env
@@ -30,7 +34,8 @@ class AsyncClient:
         self.base_url = self.__get_api_env_host(self.api_env)
 
         self.headers = {
-            "User-Agent": f"ThreatX-API-Client/{importlib.metadata.version('threatx_api_client')}"
+            "User-Agent":
+                f"ThreatX-API-Client/{importlib.metadata.version('threatx_api_client')}",
         }
 
         if headers:
@@ -38,13 +43,13 @@ class AsyncClient:
 
         self.verify_ssl = verify_ssl
 
-    def __get_api_env_host(self, api_env):
+    def __get_api_env_host(self, api_env: str) -> str:
         old_host_parts = {
             "prod": "",
             "pod": "tx-us-east-2a",
             "qa": "qa0",
             "dev": "dev0",
-            "staging": "staging0"
+            "staging": "staging0",
         }
 
         if api_env in old_host_parts:
@@ -54,10 +59,10 @@ class AsyncClient:
 
         return f"https://{api_env}.threatx.io"
 
-    def __generate_api_link(self, api_ver: int):
+    def __generate_api_link(self, api_ver: int) -> str:
         return f"/{self.api_path}/v{api_ver}"
 
-    async def __post(self, session, path: str, post_payload: dict):
+    async def __post(self, session: ClientSession, path: str, post_payload: dict) -> dict:
         marker_var = post_payload.get("marker_var")
         clean_post_payload = post_payload.copy()
         clean_post_payload.pop("marker_var", None)
@@ -70,8 +75,8 @@ class AsyncClient:
                     raw_response.status,
                     await raw_response.text(),
                     raw_response.headers.get("X-Request-ID"),
-                    marker_var
-                )
+                    marker_var,
+                ) from None
 
         response_ok_data = response.get("Ok")
         response_error_data = response.get("Error")
@@ -87,13 +92,12 @@ class AsyncClient:
             post_payload.pop("token", None)
             tx_api_session_token = await self.__login(session)
             return await self.__post(session, path, {"token": tx_api_session_token, **post_payload})
-        elif response_error_data:
+        if response_error_data:
             error_msg = {marker_var: response_error_data} if marker_var else response_error_data
             raise TXAPIResponseError(error_msg)
-        else:
-            return {marker_var: response} if marker_var else response
+        return {marker_var: response} if marker_var else response
 
-    async def __process_response(self, path: str, available_commands: list, payloads):
+    async def __process_response(self, path: str, available_commands: list, payloads: dict | list) -> dict | list:
         normalized_payloads = [payloads] if isinstance(payloads, dict) else payloads
 
         for payload in normalized_payloads:
@@ -105,9 +109,11 @@ class AsyncClient:
             enable_cleanup_closed=True,
             verify_ssl=self.verify_ssl,
             keepalive_timeout=5,
-            resolver=resolver
+            resolver=resolver,
         )
-        session = aiohttp.ClientSession(base_url=self.base_url, headers=self.headers, connector=connector)
+        session = aiohttp.ClientSession(
+            base_url=self.base_url, headers=self.headers, connector=connector,
+        )
 
         try:
             global tx_api_session_token  # noqa: PLW0603
@@ -129,28 +135,30 @@ class AsyncClient:
 
         return responses
 
-    async def __login(self, session: aiohttp.ClientSession):
+    async def __login(self, session: aiohttp.ClientSession) -> str:
         path = f"{self.__generate_api_link(1)}/login"
 
         if not self.api_key:
-            raise TXAPIIncorrectTokenError("Please provide TX API Key.")
+            msg = "Please provide TX API Key."
+            raise TXAPIIncorrectTokenError(msg)
 
         response = await asyncio.gather(
             self.__post(
                 session,
                 path,
-                {"command": "login", "api_token": self.api_key}
-            )
+                {"command": "login", "api_token": self.api_key},
+            ),
         )
 
         token_value = response[0]["token"]
 
         if not token_value:
-            raise TXAPIIncorrectTokenError("TX API Token is not correct!")
+            msg = "TX API Token is not correct!"
+            raise TXAPIIncorrectTokenError(msg)
 
         return token_value
 
-    async def api_keys(self, payloads):
+    async def api_keys(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """API Keys management.
 
         Method allows to manage API keys, allowing authorized users to
@@ -166,7 +174,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def api_schemas(self, payloads):
+    async def api_schemas(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """API schemas management.
 
         Method allows to manage API schemas.
@@ -181,7 +189,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def customers(self, payloads):
+    async def customers(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Customers management.
 
         Method allows to create, manage and remove customers.
@@ -203,12 +211,12 @@ class AsyncClient:
             "new_api_key",
             "delete_api_key",
             "get_customer_config",
-            "set_customer_config"
+            "set_customer_config",
         ]
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def users(self, payloads):
+    async def users(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Users management.
 
         Method allows to create, manage and remove users.
@@ -224,12 +232,12 @@ class AsyncClient:
             "new",
             "get",
             "update",
-            "delete"
+            "delete",
         ]
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def sites(self, payloads):
+    async def sites(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Sites management.
 
         Method allows to create, manage and remove sites.
@@ -244,7 +252,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def site_groups(self, payloads):
+    async def site_groups(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Site groups management.
 
         Method allows to create, manage and remove site groups.
@@ -261,7 +269,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def templates(self, payloads):
+    async def templates(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Templates management.
 
         Method allows to create, manage and remove customer templates.
@@ -276,7 +284,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def sensors(self, payloads):
+    async def sensors(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Sensors information.
 
         Method provides information of on-premises deployed sensors and sensor metadata.
@@ -291,7 +299,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def services(self, payloads):
+    async def services(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Services information.
 
         Method provides information on ThreatX system services
@@ -307,7 +315,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def entities(self, payloads):
+    async def entities(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Entities management.
 
         Method allows to list and manage entities.
@@ -331,12 +339,12 @@ class AsyncClient:
             "whitelist_entity",
             "watch_entity",
             "list_most_risky",
-            "count"
+            "count",
         ]
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def metrics(self, payloads):
+    async def metrics(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Statistical metrics.
 
         Method provides statistical metrics on ThreatX system operations.
@@ -361,12 +369,12 @@ class AsyncClient:
             "threat_stats_by_site",
             "status_codes_by_site",
             "request_stats_hourly_by_site",
-            "request_stats_hourly_by_endpoint"
+            "request_stats_hourly_by_endpoint",
         ]
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def subscriptions(self, payloads):
+    async def subscriptions(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Subscriptions management.
 
         Method allows to configure customer notification subscriptions.
@@ -384,7 +392,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def list_whitelist(self, payloads):
+    async def list_whitelist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get whitelist IPs.
 
         Method allows to get customer whitelisted IPs.
@@ -399,7 +407,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def list_blacklist(self, payloads):
+    async def list_blacklist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get blacklist IPs.
 
         Method allows to get customer blacklisted IPs.
@@ -414,7 +422,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def list_blocklist(self, payloads):
+    async def list_blocklist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get blocklisted IPs.
 
         Method allows to get customer blocked IPs.
@@ -429,7 +437,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def list_mutelist(self, payloads):
+    async def list_mutelist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get mutelisted IPs.
 
         Method allows to get customer mutelisted IPs.
@@ -444,7 +452,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def list_ignorelist(self, payloads):
+    async def list_ignorelist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get ignorelisted IPs.
 
         Method allows to get customer ignorelisted IPs.
@@ -459,7 +467,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def global_tags(self, payloads):
+    async def global_tags(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Global tags management.
 
         Method allows to create new and provides information of
@@ -475,7 +483,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def actor_tags(self, payloads):
+    async def actor_tags(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Actor tags management.
 
         Method allows to create, manage and remove actor tags.
@@ -490,14 +498,14 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def features(self, payloads):
+    async def features(self, payloads: list[dict] | dict) -> list[dict] | dict:
         url = f"{self.__generate_api_link(1)}/features"
 
         available_commands = ["list", "query", "save", "delete"]
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def metrics_tech(self, payloads):
+    async def metrics_tech(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """API Profiler information.
 
         Method provides information of customer API Profiler.
@@ -510,9 +518,9 @@ class AsyncClient:
 
         available_commands = ["list_endpoint_profiles", "list_site_profiles"]
 
-        return self.__process_response(url, available_commands, payloads)
+        return await self.__process_response(url, available_commands, payloads)
 
-    async def channels(self, payloads):
+    async def channels(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Channels management.
 
         Method allows to create, manage and remove customer channels.
@@ -527,7 +535,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def global_settings(self, payloads):
+    async def global_settings(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Customer-wide settings.
 
         Method allows to get default customer-wide settings applied.
@@ -542,7 +550,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def dns_info(self, payloads):
+    async def dns_info(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """DNS configuration information.
 
         Method allows clients to retrieve information necessary for configuring DNS to address ThreatX services.
@@ -556,7 +564,7 @@ class AsyncClient:
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def logs(self, payloads):
+    async def logs(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Customer logs.
 
         Method allows to get customer logs including audit logs, match events, etc.
@@ -575,12 +583,12 @@ class AsyncClient:
             "matches",
             "rule_hits",
             "sysinfo",
-            "audit_log"
+            "audit_log",
         ]
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def logs_v2(self, payloads):
+    async def logs_v2(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Customer logs.
 
         Method allows to get customer logs including block, match and audit events.
@@ -594,12 +602,12 @@ class AsyncClient:
         available_commands = [
             "block_events",
             "match_events",
-            "audit_events"
+            "audit_events",
         ]
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def lists(self, payloads):
+    async def lists(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Lists management.
 
         Method allows to manage IP addresses within black, block and whitelists.
@@ -635,12 +643,12 @@ class AsyncClient:
             "bulk_delete_blocklist",
             "bulk_delete_whitelist",
             "bulk_delete_ignorelist",
-            "ip_to_link"
+            "ip_to_link",
         ]
 
         return await self.__process_response(url, available_commands, payloads)
 
-    async def rules(self, payloads):
+    async def rules(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Rules management.
 
         Method allows to create, manage and remove customer rules.
@@ -671,16 +679,21 @@ class AsyncClient:
             "delete_whitelist_rule",
             "delete_profiler_rule",
             "delete_common_rule",
-            "validate_rule"
+            "validate_rule",
         ]
 
         return await self.__process_response(url, available_commands, payloads)
 
 class Client(AsyncClient):
-    def __init__(self, api_env, api_key, headers: Optional[dict] = None, verify_ssl: bool = True):
+    """Main API Client class."""
+    def __init__(
+            self, api_env: str, api_key: str,
+            headers: dict | None = None, verify_ssl: bool = True,
+    ) -> None:
+        """Client class initializer."""
         super().__init__(api_env, api_key, headers, verify_ssl)
 
-    def api_keys(self, payloads):
+    def api_keys(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """API Keys management.
 
         Method allows to manage API keys, allowing authorized users to
@@ -692,7 +705,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().api_keys(payloads))
 
-    def api_schemas(self, payloads):
+    def api_schemas(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """API schemas management.
 
         Method allows to manage API schemas.
@@ -703,7 +716,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().api_schemas(payloads))
 
-    def customers(self, payloads):
+    def customers(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Customers management.
 
         Method allows to create, manage and remove customers.
@@ -714,7 +727,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().customers(payloads))
 
-    def users(self, payloads):
+    def users(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Users management.
 
         Method allows to create, manage and remove users.
@@ -725,7 +738,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().users(payloads))
 
-    def sites(self, payloads):
+    def sites(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Sites management.
 
         Method allows to create, manage and remove sites.
@@ -736,7 +749,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().sites(payloads))
 
-    def site_groups(self, payloads):
+    def site_groups(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Site groups management.
 
         Method allows to create, manage and remove site groups.
@@ -749,7 +762,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().site_groups(payloads))
 
-    def templates(self, payloads):
+    def templates(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Templates management.
 
         Method allows to create, manage and remove customer templates.
@@ -760,7 +773,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().templates(payloads))
 
-    def sensors(self, payloads):
+    def sensors(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Sensors information.
 
         Method provides information of on-premises deployed sensors and sensor metadata.
@@ -771,7 +784,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().sensors(payloads))
 
-    def services(self, payloads):
+    def services(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Services information.
 
         Method provides information on ThreatX system services
@@ -783,7 +796,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().services(payloads))
 
-    def entities(self, payloads):
+    def entities(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Entities management.
 
         Method allows to list and manage entities.
@@ -794,7 +807,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().entities(payloads))
 
-    def metrics(self, payloads):
+    def metrics(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Statistical metrics.
 
         Method provides statistical metrics on ThreatX system operations.
@@ -805,7 +818,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().metrics(payloads))
 
-    def subscriptions(self, payloads):
+    def subscriptions(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Subscriptions management.
 
         Method allows to configure customer notification subscriptions.
@@ -819,7 +832,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().subscriptions(payloads))
 
-    def list_whitelist(self, payloads):
+    def list_whitelist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get whitelist IPs.
 
         Method allows to get customer whitelisted IPs.
@@ -830,7 +843,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().list_whitelist(payloads))
 
-    def list_blacklist(self, payloads):
+    def list_blacklist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get blacklist IPs.
 
         Method allows to get customer blacklisted IPs.
@@ -841,7 +854,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().list_blacklist(payloads))
 
-    def list_blocklist(self, payloads):
+    def list_blocklist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get blocklisted IPs.
 
         Method allows to get customer blocked IPs.
@@ -852,7 +865,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().list_blocklist(payloads))
 
-    def list_mutelist(self, payloads):
+    def list_mutelist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get mutelisted IPs.
 
         Method allows to get customer mutelisted IPs.
@@ -863,7 +876,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().list_mutelist(payloads))
 
-    def list_ignorelist(self, payloads):
+    def list_ignorelist(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Get ignorelisted IPs.
 
         Method allows to get customer ignorelisted IPs.
@@ -874,7 +887,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().list_ignorelist(payloads))
 
-    def global_tags(self, payloads):
+    def global_tags(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Global tags management.
 
         Method allows to create new and provides information of
@@ -886,7 +899,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().global_tags(payloads))
 
-    def actor_tags(self, payloads):
+    def actor_tags(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Actor tags management.
 
         Method allows to create, manage and remove actor tags.
@@ -897,11 +910,11 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().actor_tags(payloads))
 
-    def features(self, payloads):
+    def features(self, payloads: list[dict] | dict) -> list[dict] | dict:
         #TODO: add docs here and in parent class
         return asyncio.run(super().features(payloads))
 
-    def metrics_tech(self, payloads):
+    def metrics_tech(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """API Profiler information.
 
         Method provides information of customer API Profiler.
@@ -912,7 +925,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().metrics_tech(payloads))
 
-    def channels(self, payloads):
+    def channels(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Channels management.
 
         Method allows to create, manage and remove customer channels.
@@ -923,7 +936,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().channels(payloads))
 
-    def global_settings(self, payloads):
+    def global_settings(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Customer-wide settings.
 
         Method allows to get default customer-wide settings applied.
@@ -934,7 +947,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().global_settings(payloads))
 
-    def dns_info(self, payloads):
+    def dns_info(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """DNS configuration information.
 
         Method allows clients to retrieve information necessary for configuring DNS to address ThreatX services.
@@ -944,7 +957,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().dns_info(payloads))
 
-    def logs(self, payloads):
+    def logs(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Customer logs.
 
         Method allows to get customer logs including audit logs, match events, etc.
@@ -955,7 +968,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().logs(payloads))
 
-    def logs_v2(self, payloads):
+    def logs_v2(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Customer logs.
 
         Method allows to get customer logs including block, match and audit events.
@@ -966,7 +979,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().logs_v2(payloads))
 
-    def lists(self, payloads):
+    def lists(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Lists management.
 
         Method allows to manage IP addresses within black, block and whitelists.
@@ -977,7 +990,7 @@ class Client(AsyncClient):
         """
         return asyncio.run(super().lists(payloads))
 
-    def rules(self, payloads):
+    def rules(self, payloads: list[dict] | dict) -> list[dict] | dict:
         """Rules management.
 
         Method allows to create, manage and remove customer rules.
