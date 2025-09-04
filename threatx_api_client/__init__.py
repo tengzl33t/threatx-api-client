@@ -15,7 +15,7 @@ from threatx_api_client.exceptions import (
 tx_api_session_token = ""
 
 
-class Client:
+class AsyncClient:
     """Main API Client class."""
 
     def __init__(self, api_env, api_key, headers: Optional[dict] = None, verify_ssl: bool = True):
@@ -150,7 +150,7 @@ class Client:
 
         return token_value
 
-    def api_keys(self, payloads):
+    async def api_keys(self, payloads):
         """API Keys management.
 
         Method allows to manage API keys, allowing authorized users to
@@ -164,9 +164,9 @@ class Client:
 
         available_commands = ["list", "new", "update", "revoke"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def api_schemas(self, payloads):
+    async def api_schemas(self, payloads):
         """API schemas management.
 
         Method allows to manage API schemas.
@@ -179,9 +179,9 @@ class Client:
 
         available_commands = ["save", "list", "delete"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def customers(self, payloads):
+    async def customers(self, payloads):
         """Customers management.
 
         Method allows to create, manage and remove customers.
@@ -206,9 +206,9 @@ class Client:
             "set_customer_config"
         ]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def users(self, payloads):
+    async def users(self, payloads):
         """Users management.
 
         Method allows to create, manage and remove users.
@@ -227,9 +227,9 @@ class Client:
             "delete"
         ]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def sites(self, payloads):
+    async def sites(self, payloads):
         """Sites management.
 
         Method allows to create, manage and remove sites.
@@ -242,9 +242,9 @@ class Client:
 
         available_commands = ["list", "new", "get", "delete", "update", "unset"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def site_groups(self, payloads):
+    async def site_groups(self, payloads):
         """Site groups management.
 
         Method allows to create, manage and remove site groups.
@@ -259,9 +259,9 @@ class Client:
 
         available_commands = ["list", "save", "delete"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def templates(self, payloads):
+    async def templates(self, payloads):
         """Templates management.
 
         Method allows to create, manage and remove customer templates.
@@ -274,9 +274,9 @@ class Client:
 
         available_commands = ["set", "get", "delete"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def sensors(self, payloads):
+    async def sensors(self, payloads):
         """Sensors information.
 
         Method provides information of on-premises deployed sensors and sensor metadata.
@@ -289,9 +289,9 @@ class Client:
 
         available_commands = ["list", "tags"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def services(self, payloads):
+    async def services(self, payloads):
         """Services information.
 
         Method provides information on ThreatX system services
@@ -305,9 +305,9 @@ class Client:
 
         available_commands = ["list"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def entities(self, payloads):
+    async def entities(self, payloads):
         """Entities management.
 
         Method allows to list and manage entities.
@@ -334,9 +334,9 @@ class Client:
             "count"
         ]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def metrics(self, payloads):
+    async def metrics(self, payloads):
         """Statistical metrics.
 
         Method provides statistical metrics on ThreatX system operations.
@@ -364,9 +364,9 @@ class Client:
             "request_stats_hourly_by_endpoint"
         ]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def subscriptions(self, payloads):
+    async def subscriptions(self, payloads):
         """Subscriptions management.
 
         Method allows to configure customer notification subscriptions.
@@ -382,9 +382,9 @@ class Client:
 
         available_commands = ["save", "delete", "list", "enable", "disable"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def list_whitelist(self, payloads):
+    async def list_whitelist(self, payloads):
         """Get whitelist IPs.
 
         Method allows to get customer whitelisted IPs.
@@ -397,9 +397,9 @@ class Client:
 
         available_commands = ["list"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def list_blacklist(self, payloads):
+    async def list_blacklist(self, payloads):
         """Get blacklist IPs.
 
         Method allows to get customer blacklisted IPs.
@@ -412,9 +412,9 @@ class Client:
 
         available_commands = ["list"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def list_blocklist(self, payloads):
+    async def list_blocklist(self, payloads):
         """Get blocklisted IPs.
 
         Method allows to get customer blocked IPs.
@@ -427,9 +427,9 @@ class Client:
 
         available_commands = ["list"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def list_mutelist(self, payloads):
+    async def list_mutelist(self, payloads):
         """Get mutelisted IPs.
 
         Method allows to get customer mutelisted IPs.
@@ -442,9 +442,9 @@ class Client:
 
         available_commands = ["list"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def list_ignorelist(self, payloads):
+    async def list_ignorelist(self, payloads):
         """Get ignorelisted IPs.
 
         Method allows to get customer ignorelisted IPs.
@@ -457,9 +457,9 @@ class Client:
 
         available_commands = ["list"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def global_tags(self, payloads):
+    async def global_tags(self, payloads):
         """Global tags management.
 
         Method allows to create new and provides information of
@@ -473,9 +473,9 @@ class Client:
 
         available_commands = ["new", "list"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def actor_tags(self, payloads):
+    async def actor_tags(self, payloads):
         """Actor tags management.
 
         Method allows to create, manage and remove actor tags.
@@ -488,16 +488,16 @@ class Client:
 
         available_commands = ["new", "list", "delete"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def features(self, payloads):
+    async def features(self, payloads):
         url = f"{self.__generate_api_link(1)}/features"
 
         available_commands = ["list", "query", "save", "delete"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def metrics_tech(self, payloads):
+    async def metrics_tech(self, payloads):
         """API Profiler information.
 
         Method provides information of customer API Profiler.
@@ -510,9 +510,9 @@ class Client:
 
         available_commands = ["list_endpoint_profiles", "list_site_profiles"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return self.__process_response(url, available_commands, payloads)
 
-    def channels(self, payloads):
+    async def channels(self, payloads):
         """Channels management.
 
         Method allows to create, manage and remove customer channels.
@@ -525,9 +525,9 @@ class Client:
 
         available_commands = ["new", "list", "update"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def global_settings(self, payloads):
+    async def global_settings(self, payloads):
         """Customer-wide settings.
 
         Method allows to get default customer-wide settings applied.
@@ -540,9 +540,9 @@ class Client:
 
         available_commands = ["get"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def dns_info(self, payloads):
+    async def dns_info(self, payloads):
         """DNS configuration information.
 
         Method allows clients to retrieve information necessary for configuring DNS to address ThreatX services.
@@ -554,9 +554,9 @@ class Client:
 
         available_commands = ["list"]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def logs(self, payloads):
+    async def logs(self, payloads):
         """Customer logs.
 
         Method allows to get customer logs including audit logs, match events, etc.
@@ -578,9 +578,9 @@ class Client:
             "audit_log"
         ]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def logs_v2(self, payloads):
+    async def logs_v2(self, payloads):
         """Customer logs.
 
         Method allows to get customer logs including block, match and audit events.
@@ -597,9 +597,9 @@ class Client:
             "audit_events"
         ]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def lists(self, payloads):
+    async def lists(self, payloads):
         """Lists management.
 
         Method allows to manage IP addresses within black, block and whitelists.
@@ -638,9 +638,9 @@ class Client:
             "ip_to_link"
         ]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
 
-    def rules(self, payloads):
+    async def rules(self, payloads):
         """Rules management.
 
         Method allows to create, manage and remove customer rules.
@@ -674,4 +674,316 @@ class Client:
             "validate_rule"
         ]
 
-        return asyncio.run(self.__process_response(url, available_commands, payloads))
+        return await self.__process_response(url, available_commands, payloads)
+
+class Client(AsyncClient):
+    def __init__(self, api_env, api_key, headers: Optional[dict] = None, verify_ssl: bool = True):
+        super().__init__(api_env, api_key, headers, verify_ssl)
+
+    def api_keys(self, payloads):
+        """API Keys management.
+
+        Method allows to manage API keys, allowing authorized users to
+        create (and revoke) keys granting automated access to the ThreatX API.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().api_keys(payloads))
+
+    def api_schemas(self, payloads):
+        """API schemas management.
+
+        Method allows to manage API schemas.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().api_schemas(payloads))
+
+    def customers(self, payloads):
+        """Customers management.
+
+        Method allows to create, manage and remove customers.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().customers(payloads))
+
+    def users(self, payloads):
+        """Users management.
+
+        Method allows to create, manage and remove users.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().users(payloads))
+
+    def sites(self, payloads):
+        """Sites management.
+
+        Method allows to create, manage and remove sites.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().sites(payloads))
+
+    def site_groups(self, payloads):
+        """Site groups management.
+
+        Method allows to create, manage and remove site groups.
+        Site groups provide access control features similar to UNIX user groups,
+        restricting access to ThreatX sites.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().site_groups(payloads))
+
+    def templates(self, payloads):
+        """Templates management.
+
+        Method allows to create, manage and remove customer templates.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().templates(payloads))
+
+    def sensors(self, payloads):
+        """Sensors information.
+
+        Method provides information of on-premises deployed sensors and sensor metadata.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().sensors(payloads))
+
+    def services(self, payloads):
+        """Services information.
+
+        Method provides information on ThreatX system services
+        and their public IP addresses.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().services(payloads))
+
+    def entities(self, payloads):
+        """Entities management.
+
+        Method allows to list and manage entities.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().entities(payloads))
+
+    def metrics(self, payloads):
+        """Statistical metrics.
+
+        Method provides statistical metrics on ThreatX system operations.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().metrics(payloads))
+
+    def subscriptions(self, payloads):
+        """Subscriptions management.
+
+        Method allows to configure customer notification subscriptions.
+        Subscriptions are used to receive notifications related
+        to ThreatX events, delivered either via email,
+        webhook, or through a log emitter communicating directly to an analyzer.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().subscriptions(payloads))
+
+    def list_whitelist(self, payloads):
+        """Get whitelist IPs.
+
+        Method allows to get customer whitelisted IPs.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().list_whitelist(payloads))
+
+    def list_blacklist(self, payloads):
+        """Get blacklist IPs.
+
+        Method allows to get customer blacklisted IPs.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().list_blacklist(payloads))
+
+    def list_blocklist(self, payloads):
+        """Get blocklisted IPs.
+
+        Method allows to get customer blocked IPs.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().list_blocklist(payloads))
+
+    def list_mutelist(self, payloads):
+        """Get mutelisted IPs.
+
+        Method allows to get customer mutelisted IPs.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().list_mutelist(payloads))
+
+    def list_ignorelist(self, payloads):
+        """Get ignorelisted IPs.
+
+        Method allows to get customer ignorelisted IPs.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().list_ignorelist(payloads))
+
+    def global_tags(self, payloads):
+        """Global tags management.
+
+        Method allows to create new and provides information of
+        global tags available for use.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().global_tags(payloads))
+
+    def actor_tags(self, payloads):
+        """Actor tags management.
+
+        Method allows to create, manage and remove actor tags.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().actor_tags(payloads))
+
+    def features(self, payloads):
+        #TODO: add docs here and in parent class
+        return asyncio.run(super().features(payloads))
+
+    def metrics_tech(self, payloads):
+        """API Profiler information.
+
+        Method provides information of customer API Profiler.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().metrics_tech(payloads))
+
+    def channels(self, payloads):
+        """Channels management.
+
+        Method allows to create, manage and remove customer channels.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().channels(payloads))
+
+    def global_settings(self, payloads):
+        """Customer-wide settings.
+
+        Method allows to get default customer-wide settings applied.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().global_settings(payloads))
+
+    def dns_info(self, payloads):
+        """DNS configuration information.
+
+        Method allows clients to retrieve information necessary for configuring DNS to address ThreatX services.
+        :param list[dict]|dict payloads: API payloads or a single payload containing main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().dns_info(payloads))
+
+    def logs(self, payloads):
+        """Customer logs.
+
+        Method allows to get customer logs including audit logs, match events, etc.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().logs(payloads))
+
+    def logs_v2(self, payloads):
+        """Customer logs.
+
+        Method allows to get customer logs including block, match and audit events.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().logs_v2(payloads))
+
+    def lists(self, payloads):
+        """Lists management.
+
+        Method allows to manage IP addresses within black, block and whitelists.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().lists(payloads))
+
+    def rules(self, payloads):
+        """Rules management.
+
+        Method allows to create, manage and remove customer rules.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
+        return asyncio.run(super().rules(payloads))
