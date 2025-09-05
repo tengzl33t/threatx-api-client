@@ -11,7 +11,7 @@ dependencies = [
     "aiohttp (>=3.9)",
     "aiodns (>=3.2.0,<4.0.0)",
 ]
-requires-python = ">=3.9,<4"
+requires-python = ">=3.10,<4"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.12"
@@ -28,24 +28,16 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 src = ["threatx_api_client", "tests"]
-lint.select = [
-    "F",
-    "E",
-    "W",
-    "C90",
-    "I",
-    "N",
-    "D",
-    "PERF",
-    "PL",
-    "RUF",
-    "UP"
-]
+lint.select = ["ALL"]
 lint.ignore = [
     "E501",
+    "PLR2004",
+    "D104",
     "D100",
-    "D102",
-    "D104"
+    "INP001",
+    "FBT",
+    "TD",
+    "PT",
 ]
 
 [tool.ruff.lint.pydocstyle]

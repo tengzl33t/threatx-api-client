@@ -12,17 +12,16 @@ def get_customer_sites_data(customer_name: str, sites: list) -> list:
     :return: API responses
     :rtype: list
     """
-    sites_data = tx_api.sites([
+    return tx_api.sites([
         {
             "command": "get",
             "customer_name": customer_name,
-            "name": site
+            "name": site,
         } for site in sites
     ])
-    return sites_data
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     customer_name = ""
     sites = ["example.com", "test.local"]
-    print(get_customer_sites_data(customer_name, sites))
+    print(get_customer_sites_data(customer_name, sites))  # noqa: T201
