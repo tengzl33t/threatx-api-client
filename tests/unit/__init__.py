@@ -1,10 +1,11 @@
 import asyncio
 import os
+from collections.abc import Coroutine
 from unittest import TestCase
 
 import aiohttp
-import pytest
 from threatx_api_client import (
+    AsyncClient,
     Client,
     TXAPIIncorrectCommandError,
     TXAPIIncorrectTokenError,
@@ -23,10 +24,11 @@ class TestClient(TestCase):
         api_env = cls.api_env = "api.protect"
         cls.tenant = os.getenv("TX_API_TEST_TENANT")
         cls.api_client = Client(api_env, api_key)
+        cls.async_api_client = AsyncClient(api_env, api_key)
 
     def test_empty_token(self) -> None:
         """Test for no API token provided."""
-        with pytest.raises(TXAPIIncorrectTokenError):
+        with self.assertRaises(TXAPIIncorrectTokenError):
             Client("prod", "")
 
     async def __process_with_session(self, func, client):  # noqa: ANN001, ANN202
@@ -36,8 +38,8 @@ class TestClient(TestCase):
     def test_incorrect_token(self) -> None:
         """Test for incorrect API token provided."""
         client = Client("prod", "a34456456gfd")
-        with pytest.raises(TXAPIIncorrectTokenError):
-            asyncio.run(self.__process_with_session(client._Client__login, client))  # Private method test hack  # noqa: SLF001
+        with self.assertRaises(TXAPIIncorrectTokenError):
+            asyncio.run(self.__process_with_session(client._AsyncClient__login, client))  # Private method test hack  # noqa: SLF001
 
     def test_correct_token_and_env(self) -> None:
         """Test for correct API token and environment provided."""
@@ -45,7 +47,7 @@ class TestClient(TestCase):
 
     def test_sites_incorrect_command(self) -> None:
         """Test for incorrect command in payload provided."""
-        with pytest.raises(TXAPIIncorrectCommandError):
+        with self.assertRaises(TXAPIIncorrectCommandError):
             self.api_client.sites({
                 "command": "AyyLmao",
                 "customer_name": self.tenant,
@@ -58,7 +60,7 @@ class TestClient(TestCase):
             "customer_name": "fffamogus",
         })
 
-        assert isinstance(response, TXAPIResponseError)
+        self.assertIsInstance(response, TXAPIResponseError)
 
     def test_json_error_503_exception(self) -> None:
         """Test for 503 error returned."""
@@ -68,8 +70,8 @@ class TestClient(TestCase):
             "command": "list",
             "customer_name": "test",
         })
-        assert isinstance(response, TXAPIJSONError)
-        assert response.status_code == 503
+        self.assertIsInstance(response, TXAPIJSONError)
+        self.assertEqual(response.status_code, 503)
 
     def test_json_error_403_exception(self) -> None:
         """Test for 403 error returned."""
@@ -79,8 +81,8 @@ class TestClient(TestCase):
             "command": "list",
             "customer_name": "test",
         })
-        assert isinstance(response, TXAPIJSONError)
-        assert response.status_code == 403
+        self.assertIsInstance(response, TXAPIJSONError)
+        self.assertEqual(response.status_code, 403)
 
     def test_list_sites(self) -> None:
         """Test for 'sites' method 'list' command."""
@@ -88,7 +90,7 @@ class TestClient(TestCase):
             "command": "list",
             "customer_name": self.tenant,
         })
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
 
     def test_get_customers(self) -> None:
         """Test for 'customers' method 'get' command."""
@@ -96,7 +98,7 @@ class TestClient(TestCase):
             "command": "get",
             "name": self.tenant,
         })
-        assert isinstance(response, dict)
+        self.assertIsInstance(response, dict)
 
     def test_get_customers_list(self) -> None:
         """Test for 'customers' method 'get' command."""
@@ -104,7 +106,7 @@ class TestClient(TestCase):
             "command": "get",
             "name": self.tenant,
         }])
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
 
     def test_list_users(self) -> None:
         """Test for 'users' method 'list' command."""
@@ -112,7 +114,7 @@ class TestClient(TestCase):
             "command": "list",
             "customer_name": self.tenant,
         })
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
 
     def test_list_users_marker_var_single(self) -> None:
         """Test for 'users' method 'list' command."""
@@ -121,7 +123,7 @@ class TestClient(TestCase):
             "customer_name": self.tenant,
             "marker_var": "test",
         })
-        assert isinstance(response, dict)
+        self.assertIsInstance(response, dict)
 
     def test_list_users_marker_var_list(self) -> None:
         """Test for 'users' method 'list' command."""
@@ -130,7 +132,7 @@ class TestClient(TestCase):
             "customer_name": self.tenant,
             "marker_var": "test",
         }])
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
 
     def test_get_templates(self) -> None:
         """Test for 'templates' method 'get' command."""
@@ -138,7 +140,7 @@ class TestClient(TestCase):
             "command": "get",
             "customer_name": self.tenant,
         })
-        assert isinstance(response, dict)
+        self.assertIsInstance(response, dict)
 
     def test_list_sensors(self) -> None:
         """Test for 'sensors' method 'list' command."""
@@ -146,7 +148,7 @@ class TestClient(TestCase):
             "command": "list",
             "customer_name": self.tenant,
         })
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
 
     def test_list_services(self) -> None:
         """Test for 'services' method 'list' command."""
@@ -154,7 +156,7 @@ class TestClient(TestCase):
             "command": "list",
             "customer_name": self.tenant,
         })
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
 
     def test_list_entities(self) -> None:
         """Test for 'entities' method 'list' command."""
@@ -162,7 +164,7 @@ class TestClient(TestCase):
             "command": "list",
             "customer_name": self.tenant,
         })
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
 
     def test_list_subscriptions(self) -> None:
         """Test for 'subscriptions' method 'list' command."""
@@ -170,7 +172,7 @@ class TestClient(TestCase):
             "command": "list",
             "customer_name": self.tenant,
         })
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
 
     def test_list_blacklist_lists(self) -> None:
         """Test for 'lists' method 'list_blacklist' command."""
@@ -178,7 +180,7 @@ class TestClient(TestCase):
             "command": "list_blacklist",
             "customer_name": self.tenant,
         })
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
 
     def test_list_customer_rules(self) -> None:
         """Test for 'rules' method 'list_customer_rules' command."""
@@ -186,4 +188,21 @@ class TestClient(TestCase):
             "command": "list_customer_rules",
             "customer_name": self.tenant,
         })
-        assert isinstance(response, list)
+        self.assertIsInstance(response, list)
+
+    def test_async_api_schemas(self) -> None:
+        """Test for 'api_schemas' method 'list_customer_rules' command."""
+        response = asyncio.run(self.async_api_client.api_schemas({
+            "command": "list",
+            "customer_name": self.tenant,
+        }))
+        self.assertIsInstance(response, dict)
+
+    def test_async_list_whitelist(self) -> None:
+        """Test for 'list_whitelist' method 'list' command."""
+        response = self.async_api_client.list_whitelist({
+            "command": "list",
+            "customer_name": self.tenant,
+        })
+        self.assertIsInstance(response, Coroutine)
+

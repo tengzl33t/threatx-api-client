@@ -499,6 +499,14 @@ class AsyncClient:
         return await self.__process_response(url, available_commands, payloads)
 
     async def features(self, payloads: list[dict] | dict) -> list[dict] | dict:
+        """Tenant Features information.
+
+        Method provides information of tenant features enabled.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
         url = f"{self.__generate_api_link(1)}/features"
 
         available_commands = ["list", "query", "save", "delete"]
@@ -911,7 +919,14 @@ class Client(AsyncClient):
         return asyncio.run(super().actor_tags(payloads))
 
     def features(self, payloads: list[dict] | dict) -> list[dict] | dict:
-        #TODO: add docs here and in parent class
+        """Tenant Features information.
+
+        Method provides information of tenant features enabled.
+        :param list[dict]|dict payloads: API payloads or a single payload containing
+        main command and additional parameters.
+        :return: responses: API responses
+        :rtype: list[dict]|dict
+        """
         return asyncio.run(super().features(payloads))
 
     def metrics_tech(self, payloads: list[dict] | dict) -> list[dict] | dict:

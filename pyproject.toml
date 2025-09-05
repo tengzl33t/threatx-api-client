@@ -37,7 +37,7 @@ lint.ignore = [
     "INP001",
     "FBT",
     "TD",
-    "S101"
+    "PT",
 ]
 
 [tool.ruff.lint.pydocstyle]
