@@ -46,7 +46,7 @@ class AsyncClient:
     def __get_api_env_host(self, api_env: str) -> str:
         old_host_parts = {
             "prod": "",
-            "xplat": "protect"
+            "xplat": "protect",
         }
 
         if api_env in old_host_parts:
