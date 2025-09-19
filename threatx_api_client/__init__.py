@@ -46,14 +46,11 @@ class AsyncClient:
     def __get_api_env_host(self, api_env: str) -> str:
         old_host_parts = {
             "prod": "",
-            "pod": "tx-us-east-2a",
-            "qa": "qa0",
-            "dev": "dev0",
-            "staging": "staging0",
+            "xplat": "protect",
         }
 
         if api_env in old_host_parts:
-            part = (f"-{old_host_parts.get(api_env)}"
+            part = (f".{old_host_parts.get(api_env)}"
                     if old_host_parts.get(api_env) else "")
             return f"https://api{part}.threatx.io"
 
