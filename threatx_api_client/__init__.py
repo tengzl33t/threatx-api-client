@@ -50,7 +50,7 @@ class AsyncClient:
         }
 
         if api_env in old_host_parts:
-            part = (f"-{old_host_parts.get(api_env)}"
+            part = (f".{old_host_parts.get(api_env)}"
                     if old_host_parts.get(api_env) else "")
             return f"https://api{part}.threatx.io"
 
