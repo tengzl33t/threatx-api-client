@@ -29,7 +29,7 @@ class TestClient(TestCase):
     def test_empty_token(self) -> None:
         """Test for no API token provided."""
         with self.assertRaises(TXAPIIncorrectTokenError):
-            Client("prod", "")
+            Client("xplat", "")
 
     async def __process_with_session(self, func, client):  # noqa: ANN001, ANN202
         async with aiohttp.ClientSession(base_url=client.base_url) as session:
@@ -37,7 +37,7 @@ class TestClient(TestCase):
 
     def test_incorrect_token(self) -> None:
         """Test for incorrect API token provided."""
-        client = Client("prod", "a34456456gfd")
+        client = Client("xplat", "a34456456gfd")
         with self.assertRaises(TXAPIIncorrectTokenError):
             asyncio.run(self.__process_with_session(client._AsyncClient__login, client))  # Private method test hack  # noqa: SLF001
 
