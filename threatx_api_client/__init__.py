@@ -109,6 +109,7 @@ class AsyncClient:
             verify_ssl=self.verify_ssl,
             keepalive_timeout=5,
             resolver=resolver,
+            limit=75
         )
         session = aiohttp.ClientSession(
             base_url=self.base_url, headers=self.headers, connector=connector,
