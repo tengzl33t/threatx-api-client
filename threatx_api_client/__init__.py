@@ -41,6 +41,7 @@ class AsyncClient:
         if headers:
             self.headers = {**self.headers, **headers}
 
+        self.semaphore = asyncio.Semaphore(150)
         self.verify_ssl = verify_ssl
 
     def __get_api_env_host(self, api_env: str) -> str:
@@ -60,39 +61,40 @@ class AsyncClient:
         return f"/{self.api_path}/v{api_ver}"
 
     async def __post(self, session: ClientSession, path: str, post_payload: dict) -> dict:
-        marker_var = post_payload.get("marker_var")
-        clean_post_payload = post_payload.copy()
-        clean_post_payload.pop("marker_var", None)
+        async with self.semaphore:
+            marker_var = post_payload.get("marker_var")
+            clean_post_payload = post_payload.copy()
+            clean_post_payload.pop("marker_var", None)
 
-        async with session.post(path, json=clean_post_payload) as raw_response:
-            try:
-                response = await raw_response.json(content_type=None)
-            except JSONDecodeError:
-                raise TXAPIJSONError(
-                    raw_response.status,
-                    await raw_response.text(),
-                    raw_response.headers.get("X-Request-ID"),
-                    marker_var,
-                ) from None
+            async with session.post(path, json=clean_post_payload) as raw_response:
+                try:
+                    response = await raw_response.json(content_type=None)
+                except JSONDecodeError:
+                    raise TXAPIJSONError(
+                        raw_response.status,
+                        await raw_response.text(),
+                        raw_response.headers.get("X-Request-ID"),
+                        marker_var,
+                    ) from None
 
-        response_ok_data = response.get("Ok")
-        response_error_data = response.get("Error")
+            response_ok_data = response.get("Ok")
+            response_error_data = response.get("Error")
 
-        if response_ok_data is not None:
-            if marker_var:
-                return {marker_var: response_ok_data}
-            return response_ok_data
+            if response_ok_data is not None:
+                if marker_var:
+                    return {marker_var: response_ok_data}
+                return response_ok_data
 
-        global tx_api_session_token  # noqa: PLW0603
+            global tx_api_session_token  # noqa: PLW0603
 
-        if response_error_data == "Token Expired. Please re-authenticate.":
-            post_payload.pop("token", None)
-            tx_api_session_token = await self.__login(session)
-            return await self.__post(session, path, {"token": tx_api_session_token, **post_payload})
-        if response_error_data:
-            error_msg = {marker_var: response_error_data} if marker_var else response_error_data
-            raise TXAPIResponseError(error_msg)
-        return {marker_var: response} if marker_var else response
+            if response_error_data == "Token Expired. Please re-authenticate.":
+                post_payload.pop("token", None)
+                tx_api_session_token = await self.__login(session)
+                return await self.__post(session, path, {"token": tx_api_session_token, **post_payload})
+            if response_error_data:
+                error_msg = {marker_var: response_error_data} if marker_var else response_error_data
+                raise TXAPIResponseError(error_msg)
+            return {marker_var: response} if marker_var else response
 
     async def __process_response(self, path: str, available_commands: list, payloads: dict | list) -> dict | list:
         normalized_payloads = [payloads] if isinstance(payloads, dict) else payloads
