@@ -2,32 +2,35 @@
 name = "threatx-api-client"
 version = "1.8.1"
 description = "A client library for the ThreatX API"
-authors = [
-    {name = "Nikita Ratskov", email = "nikita.ratskov@threatx.com"}
-]
+authors = [{name = "Nikita Ratskov", email = "nikita.ratskov@threatx.com"}]
+requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 readme = "README.md"
 dependencies = [
-    "aiohttp (>=3.9)",
-    "aiodns (>=3.2.0,<4.0.0)",
+    "aiohttp~=3.13",
+    "aiodns~=3.5",
 ]
-requires-python = ">=3.10,<4"
 
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.12"
-coverage = "^7.10"
-deptry = "^0.23"
+[dependency-groups]
+dev = [
+    "ruff~=0.14",
+    "coverage~=7.10",
+    "pytest~=8.4",
+    "deptry~=0.23",
+]
+release = [
+    "python-semantic-release~=10.4"
+]
 
-[tool.poetry.group.release.dependencies]
-python-semantic-release = "^10.3"
-pytest = "^8.4"
+[tool.deptry.per_rule_ignores]
+DEP003 = ["threatx_list_fetcher"]
 
 [build-system]
-requires = ["poetry-core>=2.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build"]
+build-backend = "uv_build"
 
 [tool.ruff]
-src = ["threatx_api_client", "tests"]
+src = ["src", "tests"]
 lint.select = ["ALL"]
 lint.ignore = [
     "E501",
@@ -50,4 +53,4 @@ version_toml = [
 ]
 major_on_zero = false
 branch = "main"
-build_command = "poetry run ruff check"
+build_command = "uv run ruff check"

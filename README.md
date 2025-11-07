@@ -35,7 +35,7 @@ See [documentation](https://github.com/tengzl33t/threatx-api-client/blob/main/do
 
 ### Class import
 
-1. Import class `Client`: `from threatx_api_client import Client`
+1. Import class `Client` or `AsyncClient`: `from threatx_api_client import Client`
 2. Initialize class object with required environment and API key provided: `tx_api = Client(api_env, api_key)`
 
 ### API methods and commands

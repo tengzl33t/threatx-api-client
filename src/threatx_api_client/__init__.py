@@ -1,5 +1,6 @@
 import asyncio
 import importlib.metadata
+import sys
 from json import JSONDecodeError
 
 import aiohttp
@@ -104,12 +105,19 @@ class AsyncClient:
                 raise TXAPIIncorrectCommandError(payload.get("command"))
 
         resolver = aiohttp.AsyncResolver()
+        enable_cleanup_closed = False
+
+        if (3, 13, 0) <= sys.version_info < (3, 13, 1) or sys.version_info < (3, 12, 7):
+            enable_cleanup_closed = True
+
         connector = aiohttp.TCPConnector(
-            enable_cleanup_closed=True,
+            enable_cleanup_closed=enable_cleanup_closed,
             verify_ssl=self.verify_ssl,
             keepalive_timeout=5,
             resolver=resolver,
+            limit=50,
         )
+
         session = aiohttp.ClientSession(
             base_url=self.base_url,
             headers=self.headers,

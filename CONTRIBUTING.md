@@ -8,7 +8,7 @@ Clear and detailed bug reports are extremely valuable.
 ### Guideline:
 
 1. Check if the issue has already been reported
-   in [GitHub issues list](https://github.com/ThreatX/threatx-api-client/issues).
+   in [GitHub issues list](https://github.com/tengzl33t/threatx-api-client/issues).
 2. Check if the case is still actual and is reproducible using the latest main branch.
 3. Isolate the problem and provide list of actions required to reproduce problematic behaviour.
 4. Open the issue ticket with all the findings.
@@ -39,7 +39,7 @@ Please ensure your suggestions align with the project's goals and provide enough
 and context to support its value.
 
 To open a feature request, create a new issue ticket with label 'enhancement'
-in [GitHub issues](https://github.com/ThreatX/threatx-api-client/issues).
+in [GitHub issues](https://github.com/tengzl33t/threatx-api-client/issues).
 Before opening a new FR, please if this has already been reported.
 
 ## Pull requests
@@ -60,7 +60,7 @@ These requirements are applied only to the Python code changes.
 
 ### Guideline:
 
-1. Clone the project: `git clone git@github.com:ThreatX/threatx-api-client.git`
+1. Clone the project: `git clone git@github.com:tengzl33t/threatx-api-client.git`
 2. Create a new branch for the pull request: `git checkout -b branch_name`
 3. Make required changes, commit and push.
 4. Open a PR in GitHub with appropriate labels, title and description.
