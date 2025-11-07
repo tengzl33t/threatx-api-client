@@ -41,7 +41,7 @@ class AsyncClient:
         if headers:
             self.headers = {**self.headers, **headers}
 
-        self.semaphore = asyncio.Semaphore(150)
+        self.semaphore = asyncio.Semaphore(100) # Approximate file descriptor (ulimit -n) amount is x2.3 of semaphore
         self.verify_ssl = verify_ssl
 
     def __get_api_env_host(self, api_env: str) -> str:
@@ -109,10 +109,11 @@ class AsyncClient:
             verify_ssl=self.verify_ssl,
             keepalive_timeout=5,
             resolver=resolver,
-            limit=75,
         )
         session = aiohttp.ClientSession(
-            base_url=self.base_url, headers=self.headers, connector=connector,
+            base_url=self.base_url,
+            headers=self.headers,
+            connector=connector,
         )
 
         try:
@@ -142,15 +143,13 @@ class AsyncClient:
             msg = "Please provide TX API Key."
             raise TXAPIIncorrectTokenError(msg)
 
-        response = await asyncio.gather(
-            self.__post(
-                session,
-                path,
-                {"command": "login", "api_token": self.api_key},
-            ),
+        response = await self.__post(
+            session,
+            path,
+            {"command": "login", "api_token": self.api_key},
         )
 
-        token_value = response[0]["token"]
+        token_value = response["token"]
 
         if not token_value:
             msg = "TX API Token is not correct!"
