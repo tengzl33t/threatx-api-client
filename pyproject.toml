@@ -23,7 +23,7 @@ release = [
 ]
 
 [tool.deptry.per_rule_ignores]
-DEP003 = ["threatx_list_fetcher"]
+DEP003 = ["threatx_api_client"]
 
 [build-system]
 requires = ["uv_build"]
@@ -48,8 +48,7 @@ convention = "google"
 
 [tool.semantic_release]
 version_toml = [
-    "pyproject.toml:project.version",
-
+    "pyproject.toml:project.version"
 ]
 major_on_zero = false
 branch = "main"
