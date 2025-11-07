@@ -24,15 +24,15 @@ jobs:
       matrix: ${{ steps.changed-files.outputs.all_modified_files }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v46
+        uses: tj-actions/changed-files@v47
         with:
           matrix: true
           files: |
-            threatx_api_client/**
+            src/**
             tests/**
 
   test:
@@ -42,16 +42,16 @@ jobs:
     if: ${{ needs.get-changed-files.outputs.matrix != '[]' }}
     steps:
       - name: Repo checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare environment
         uses: "./.github/actions/environment"
 
       - name: Ruff check
-        run: poetry run ruff check
+        run: uv run ruff check
 
       - name: Pytest
-        run: poetry run pytest
+        run: uv run pytest
         env:
           TX_API_KEY: ${{ secrets.TX_API_KEY }}
           TX_API_TEST_TENANT: ${{ secrets.TX_API_TEST_TENANT }}
