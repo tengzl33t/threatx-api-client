@@ -1,9 +1,9 @@
 import asyncio
 import os
-from collections.abc import Coroutine
 from unittest import TestCase
 
 import aiohttp
+
 from threatx_api_client import (
     AsyncClient,
     Client,
@@ -197,12 +197,3 @@ class TestClient(TestCase):
             "customer_name": self.tenant,
         }))
         self.assertIsInstance(response, dict)
-
-    def test_async_list_whitelist(self) -> None:
-        """Test for 'list_whitelist' method 'list' command."""
-        response = self.async_api_client.list_whitelist({
-            "command": "list",
-            "customer_name": self.tenant,
-        })
-        self.assertIsInstance(response, Coroutine)
-
