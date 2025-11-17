@@ -32,8 +32,9 @@ class TestClient(TestCase):
             Client("xplat", "")
 
     async def __process_with_session(self, func, client):  # noqa: ANN001, ANN202
+        semaphore = asyncio.Semaphore(100)
         async with aiohttp.ClientSession(base_url=client.base_url) as session:
-            return await func(session)
+            return await func(session, semaphore)
 
     def test_incorrect_token(self) -> None:
         """Test for incorrect API token provided."""
