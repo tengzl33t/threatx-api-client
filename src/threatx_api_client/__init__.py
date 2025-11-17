@@ -42,7 +42,6 @@ class AsyncClient:
         if headers:
             self.headers = {**self.headers, **headers}
 
-        self.semaphore = asyncio.Semaphore(100) # Approximate file descriptor (ulimit -n) amount is x2.3 of semaphore
         self.verify_ssl = verify_ssl
 
     def __get_api_env_host(self, api_env: str) -> str:
@@ -61,8 +60,8 @@ class AsyncClient:
     def __generate_api_link(self, api_ver: int) -> str:
         return f"/{self.api_path}/v{api_ver}"
 
-    async def __post(self, session: ClientSession, path: str, post_payload: dict) -> dict:
-        async with self.semaphore:
+    async def __post(self, session: ClientSession, path: str, post_payload: dict, semaphore: asyncio.Semaphore) -> dict:
+        async with semaphore:
             marker_var = post_payload.get("marker_var")
             clean_post_payload = post_payload.copy()
             clean_post_payload.pop("marker_var", None)
@@ -90,8 +89,8 @@ class AsyncClient:
 
             if response_error_data == "Token Expired. Please re-authenticate.":
                 post_payload.pop("token", None)
-                tx_api_session_token = await self.__login(session)
-                return await self.__post(session, path, {"token": tx_api_session_token, **post_payload})
+                tx_api_session_token = await self.__login(session, semaphore)
+                return await self.__post(session, path, {"token": tx_api_session_token, **post_payload}, semaphore)
             if response_error_data:
                 error_msg = {marker_var: response_error_data} if marker_var else response_error_data
                 raise TXAPIResponseError(error_msg)
@@ -126,14 +125,17 @@ class AsyncClient:
 
         try:
             global tx_api_session_token  # noqa: PLW0603
+            semaphore = asyncio.Semaphore(100)
             if not tx_api_session_token:
-                tx_api_session_token = await self.__login(session)
+                tx_api_session_token = await self.__login(session, semaphore)
 
             responses = await asyncio.gather(*(
                 self.__post(
                     session,
                     path,
-                    {"token": tx_api_session_token, **payload}) for payload in normalized_payloads
+                    {"token": tx_api_session_token, **payload},
+                    semaphore,
+                ) for payload in normalized_payloads
             ), return_exceptions=True)
         finally:
             await session.close()
@@ -144,7 +146,7 @@ class AsyncClient:
 
         return responses
 
-    async def __login(self, session: aiohttp.ClientSession) -> str:
+    async def __login(self, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore) -> str:
         path = f"{self.__generate_api_link(1)}/login"
 
         if not self.api_key:
@@ -155,6 +157,7 @@ class AsyncClient:
             session,
             path,
             {"command": "login", "api_token": self.api_key},
+            semaphore,
         )
 
         token_value = response["token"]
