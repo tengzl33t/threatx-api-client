@@ -52,11 +52,12 @@ All the commits pushed must follow [Conventional Commits](https://www.convention
 
 ### Code style requirements:
 
-These requirements are applied only to the Python code changes.
-
 - Code must pass all the pytest and ruff checks before being merged to the main branch.
 - Run `ruff check` to verify that the code aligns with all the style requirements.
 - Run `pytest` to verify that the code passes all the unit tests.
+- Make sure unit tests cover all the new code pieces (functions, variables, etc).
+- Reuse code as much as possible, ensure there are no duplicates if possible. Do not "reinvent the bicycle".
+- No AI generated code allowed.
 
 ### Guideline:
 
