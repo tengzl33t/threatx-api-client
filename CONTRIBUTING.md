@@ -57,7 +57,7 @@ All the commits pushed must follow [Conventional Commits](https://www.convention
 - Run `pytest` to verify that the code passes all the unit tests.
 - Make sure unit tests cover all the new code pieces (functions, variables, etc).
 - Reuse code as much as possible, ensure there are no duplicates if possible. Do not "reinvent the bicycle".
-- No AI generated code allowed.
+- No AI generated code is allowed.
 
 ### Guideline:
 
