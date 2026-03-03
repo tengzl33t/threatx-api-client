@@ -60,41 +60,40 @@ class AsyncClient:
     def __generate_api_link(self, api_ver: int) -> str:
         return f"/{self.api_path}/v{api_ver}"
 
-    async def __post(self, session: ClientSession, path: str, post_payload: dict, semaphore: asyncio.Semaphore) -> dict:
-        async with semaphore:
-            marker_var = post_payload.get("marker_var")
-            clean_post_payload = post_payload.copy()
-            clean_post_payload.pop("marker_var", None)
+    async def __post(self, session: ClientSession, path: str, post_payload: dict) -> dict:
+        marker_var = post_payload.get("marker_var")
+        clean_post_payload = post_payload.copy()
+        clean_post_payload.pop("marker_var", None)
 
-            async with session.post(path, json=clean_post_payload) as raw_response:
-                try:
-                    response = await raw_response.json(content_type=None)
-                except JSONDecodeError:
-                    raise TXAPIJSONError(
-                        raw_response.status,
-                        await raw_response.text(),
-                        raw_response.headers.get("X-Request-ID"),
-                        marker_var,
-                    ) from None
+        async with session.post(path, json=clean_post_payload) as raw_response:
+            try:
+                response = await raw_response.json(content_type=None)
+            except JSONDecodeError:
+                raise TXAPIJSONError(
+                    raw_response.status,
+                    await raw_response.text(),
+                    raw_response.headers.get("X-Request-ID"),
+                    marker_var,
+                ) from None
 
-            response_ok_data = response.get("Ok")
-            response_error_data = response.get("Error")
+        response_ok_data = response.get("Ok")
+        response_error_data = response.get("Error")
 
-            if response_ok_data is not None:
-                if marker_var:
-                    return {marker_var: response_ok_data}
-                return response_ok_data
+        if response_ok_data is not None:
+            if marker_var:
+                return {marker_var: response_ok_data}
+            return response_ok_data
 
-            global tx_api_session_token  # noqa: PLW0603
+        global tx_api_session_token  # noqa: PLW0603
 
-            if response_error_data == "Token Expired. Please re-authenticate.":
-                post_payload.pop("token", None)
-                tx_api_session_token = await self.__login(session, semaphore)
-                return await self.__post(session, path, {"token": tx_api_session_token, **post_payload}, semaphore)
-            if response_error_data:
-                error_msg = {marker_var: response_error_data} if marker_var else response_error_data
-                raise TXAPIResponseError(error_msg)
-            return {marker_var: response} if marker_var else response
+        if response_error_data == "Token Expired. Please re-authenticate.":
+            post_payload.pop("token", None)
+            tx_api_session_token = await self.__login(session)
+            return await self.__post(session, path, {"token": tx_api_session_token, **post_payload})
+        if response_error_data:
+            error_msg = {marker_var: response_error_data} if marker_var else response_error_data
+            raise TXAPIResponseError(error_msg)
+        return {marker_var: response} if marker_var else response
 
     async def __process_response(self, path: str, available_commands: list, payloads: dict | list) -> dict | list:
         normalized_payloads = [payloads] if isinstance(payloads, dict) else payloads
@@ -103,7 +102,6 @@ class AsyncClient:
             if payload.get("command") not in available_commands:
                 raise TXAPIIncorrectCommandError(payload.get("command"))
 
-        resolver = aiohttp.AsyncResolver()
         enable_cleanup_closed = False
 
         if (3, 13, 0) <= sys.version_info < (3, 13, 1) or sys.version_info < (3, 12, 7):
@@ -112,9 +110,8 @@ class AsyncClient:
         connector = aiohttp.TCPConnector(
             enable_cleanup_closed=enable_cleanup_closed,
             verify_ssl=self.verify_ssl,
-            keepalive_timeout=5,
-            resolver=resolver,
-            limit=50,
+            keepalive_timeout=30,
+            limit=70,
         )
 
         session = aiohttp.ClientSession(
@@ -125,28 +122,25 @@ class AsyncClient:
 
         try:
             global tx_api_session_token  # noqa: PLW0603
-            semaphore = asyncio.Semaphore(100)
             if not tx_api_session_token:
-                tx_api_session_token = await self.__login(session, semaphore)
+                tx_api_session_token = await self.__login(session)
 
             responses = await asyncio.gather(*(
                 self.__post(
                     session,
                     path,
                     {"token": tx_api_session_token, **payload},
-                    semaphore,
                 ) for payload in normalized_payloads
             ), return_exceptions=True)
         finally:
             await session.close()
-            await resolver.close()
 
         if isinstance(payloads, dict):
             return responses[0]
 
         return responses
 
-    async def __login(self, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore) -> str:
+    async def __login(self, session: aiohttp.ClientSession) -> str:
         path = f"{self.__generate_api_link(1)}/login"
 
         if not self.api_key:
@@ -157,7 +151,6 @@ class AsyncClient:
             session,
             path,
             {"command": "login", "api_token": self.api_key},
-            semaphore,
         )
 
         token_value = response["token"]
