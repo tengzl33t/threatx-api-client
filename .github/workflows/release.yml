@@ -24,10 +24,17 @@ jobs:
         run: uv run ruff check
 
       - name: Pytest
-        run: uv run pytest
+        run: uv run pytest --testmon
         env:
           TX_API_KEY: ${{ secrets.TX_API_KEY }}
           TX_API_TEST_TENANT: ${{ secrets.TX_API_TEST_TENANT }}
+
+      - name: Save test cache
+        uses: actions/cache/save@v5
+        if: success()
+        with:
+          path: .testmondata
+          key: testmon-${{ github.ref_name }}-${{ github.run_id }}
 
       - name: Build Python WHL package
         run: uv build --wheel

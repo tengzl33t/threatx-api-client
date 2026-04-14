@@ -16,6 +16,7 @@ dev = [
     "coverage~=7.10",
     "pytest~=8.4",
     "deptry~=0.23",
+    "pytest-testmon~=2.2",
 ]
 release = [
     "python-semantic-release~=10.4"

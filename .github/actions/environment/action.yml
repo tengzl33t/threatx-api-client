@@ -17,3 +17,17 @@ runs:
     - name: Install project dependencies
       shell: bash
       run: uv sync --all-groups
+
+    - name: Restore test cache
+      uses: actions/cache/restore@v5
+      with:
+        path: .testmondata
+        key: testmon-${{ github.ref_name }}-${{ github.run_id }}
+        restore-keys: |
+          testmon-${{ github.ref_name }}
+
+    - name: Commit uv.lock
+      uses: stefanzweifel/git-auto-commit-action@v7
+      with:
+        commit_message: "chore: update uv.lock"
+        file_pattern: uv.lock
