@@ -1,6 +1,4 @@
 /dist/
-poetry.lock
-uv.lock
 /.venv/
 **/__pycache__/
 /.idea/
