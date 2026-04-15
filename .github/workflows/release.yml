@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Repo checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Prepare environment
         uses: "./.github/actions/environment"
